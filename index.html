@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SBTI - Sh*tty Burnout Type Indicator</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700;900&display=swap');
+        *{margin:0;padding:0;box-sizing:border-box}
+        :root{--neon-pink:#ff006e;--neon-blue:#00f5ff;--neon-yellow:#ffbe0b;--dark:#0a0a0a;--gray:#1a1a1a}
+        body{font-family:'Space Grotesk',sans-serif;background:var(--dark);color:white;min-height:100vh;overflow-x:hidden}
+        .glitch{position:relative;animation:glitch 2s infinite}
+        @keyframes glitch{0%,100%{transform:translate(0)}20%{transform:translate(-2px,2px)}40%{transform:translate(-2px,-2px)}60%{transform:translate(2px,2px)}80%{transform:translate(2px,-2px)}}
+        .landing{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:2rem;background:radial-gradient(circle at 20% 50%,rgba(255,0,110,0.15) 0%,transparent 50%),radial-gradient(circle at 80% 50%,rgba(0,245,255,0.15) 0%,transparent 50%)}
+        .logo{font-size:clamp(4rem,15vw,8rem);font-weight:900;background:linear-gradient(135deg,var(--neon-pink),var(--neon-blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:1rem;letter-spacing:-0.05em}
+        .subtitle{font-size:1.2rem;color:#888;margin-bottom:0.5rem}
+        .warning{background:rgba(255,0,110,0.1);border:2px solid var(--neon-pink);padding:1rem 2rem;border-radius:10px;margin:2rem 0;font-size:0.9rem;color:var(--neon-pink)}
+        .features{display:flex;gap:2rem;flex-wrap:wrap;justify-content:center;margin:2rem 0}
+        .feature{display:flex;align-items:center;gap:0.5rem;font-size:1rem}
+        .feature-icon{font-size:1.5rem}
+        .start-btn{background:linear-gradient(135deg,var(--neon-pink),var(--neon-blue));border:none;padding:1.5rem 4rem;font-size:1.5rem;font-weight:700;color:white;border-radius:50px;cursor:pointer;transition:all 0.3s;text-transform:uppercase;letter-spacing:0.1em;margin-top:2rem}
+        .start-btn:hover{transform:scale(1.05);box-shadow:0 0 40px rgba(255,0,110,0.5)}
+        .quiz-container{display:none;min-height:100vh;padding:2rem;max-width:800px;margin:0 auto}
+        .progress-bar{width:100%;height:8px;background:var(--gray);border-radius:4px;margin-bottom:3rem;overflow:hidden}
+        .progress-fill{height:100%;background:linear-gradient(90deg,var(--neon-pink),var(--neon-blue));transition:width 0.5s ease;border-radius:4px}
+        .question-number{color:var(--neon-blue);font-size:0.9rem;margin-bottom:1rem;text-transform:uppercase;letter-spacing:0.2em}
+        .question{font-size:clamp(1.5rem,5vw,2.5rem);font-weight:700;margin-bottom:3rem;line-height:1.3}
+        .options{display:flex;flex-direction:column;gap:1rem}
+        .option{background:var(--gray);border:2px solid transparent;padding:1.5rem 2rem;border-radius:15px;cursor:pointer;transition:all 0.3s;font-size:1.1rem;display:flex;align-items:center;gap:1rem}
+        .option:hover{border-color:var(--neon-blue);transform:translateX(10px);background:rgba(0,245,255,0.1)}
+        .option-emoji{font-size:2rem}
+        .result-container{display:none;min-height:100vh;padding:2rem}
+        .result-card{max-width:600px;margin:0 auto;background:var(--gray);border-radius:30px;padding:3rem;text-align:center;border:3px solid;border-image:linear-gradient(135deg,var(--neon-pink),var(--neon-blue)) 1;position:relative;overflow:hidden}
+        .result-card::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(255,0,110,0.1) 0%,transparent 70%);animation:rotate 20s linear infinite}
+        @keyframes rotate{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+        .result-content{position:relative;z-index:1}
+        .result-type{font-size:clamp(4rem,12vw,6rem);font-weight:900;background:linear-gradient(135deg,var(--neon-pink),var(--neon-yellow));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:0.5rem}
+        .result-fullname{font-size:1rem;color:#888;margin-bottom:1rem;letter-spacing:0.1em}
+        .result-tag{display:inline-block;background:rgba(255,0,110,0.2);color:var(--neon-pink);padding:0.5rem 1.5rem;border-radius:20px;font-size:0.9rem;margin-bottom:2rem;border:1px solid var(--neon-pink)}
+        .result-quote{font-size:1.5rem;font-style:italic;color:var(--neon-blue);margin-bottom:2rem;padding:1rem;border-left:4px solid var(--neon-blue);text-align:left}
+        .result-desc{font-size:1.1rem;line-height:1.8;margin-bottom:2rem;color:#ccc}
+        .result-guide{background:rgba(0,245,255,0.1);border-left:4px solid var(--neon-blue);padding:1.5rem;text-align:left;margin-bottom:2rem;border-radius:0 10px 10px 0}
+        .result-guide h3{color:var(--neon-blue);margin-bottom:0.5rem}
+        .share-section{margin-top:3rem}
+        .share-btn{background:linear-gradient(135deg,var(--neon-pink),var(--neon-blue));border:none;padding:1rem 3rem;font-size:1.2rem;font-weight:700;color:white;border-radius:50px;cursor:pointer;transition:all 0.3s;margin:0.5rem}
+        .share-btn:hover{transform:scale(1.05);box-shadow:0 0 30px rgba(255,0,110,0.5)}
+        .disclaimer{margin-top:2rem;font-size:0.8rem;color:#666}
+        .all-types{max-width:1000px;margin:4rem auto;padding:0 2rem}
+        .all-types h2{text-align:center;font-size:2rem;margin-bottom:2rem;color:var(--neon-yellow)}
+        .types-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}
+        .type-card{background:var(--gray);padding:1.5rem;border-radius:15px;border:2px solid transparent;transition:all 0.3s;cursor:pointer}
+        .type-card:hover{border-color:var(--neon-blue);transform:translateY(-5px)}
+        .type-card h3{font-size:1.5rem;color:var(--neon-pink);margin-bottom:0.5rem}
+        .type-card p{font-size:0.85rem;color:#888}
+        @media(max-width:600px){.result-card{padding:2rem 1.5rem}.option{padding:1rem}}
+    </style>
+</head>
+<body>
+    <!-- Landing Page -->
+    <div class="landing" id="landing">
+        <h1 class="logo glitch">SBTI</h1>
+        <p class="subtitle">Sh*tty Burnout Type Indicator</p>
+        <p style="color: #666; font-size: 0.9rem;">2026's Most Unhinged Personality Test</p>
+        
+        <div class="warning">
+            🚫 ZERO psychological validity — 100% accurate self-roasting
+        </div>
+        
+        <div class="features">
+            <div class="feature">
+                <span class="feature-icon">🎯</span>
+                <span>Precision self-roasting</span>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">🔥</span>
+                <span>Stress relief through chaos</span>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">🎭</span>
+                <span>16 types of modern disaster</span>
+            </div>
+        </div>
+        
+        <button class="start-btn" onclick="startQuiz()">Find Your Disaster</button>
+    </div>
+    
+    <!-- Quiz Page -->
+    <div class="quiz-container" id="quiz">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress" style="width: 0%"></div>
+        </div>
+        <div class="question-number" id="qNumber">Question 1/8</div>
+        <div class="question" id="question">Loading...</div>
+        <div class="options" id="options"></div>
+    </div>
+    
+    <!-- Result Page -->
+    <div class="result-container" id="result">
+        <div class="result-card">
+            <div class="result-content">
+                <div class="result-type" id="resultType">TYPE</div>
+                <div class="result-fullname" id="resultFullname">Full Name</div>
+                <div class="result-tag" id="resultTag">Tag</div>
+                <div class="result-quote" id="resultQuote">"Quote"</div>
+                <div class="result-desc" id="resultDesc">Description</div>
+                <div class="result-guide">
+                    <h3>🆘 Survival Guide</h3>
+                    <p id="resultGuide">Guide text</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="share-section">
+            <button class="share-btn" onclick="shareResult()">📸 Screenshot & Share</button>
+            <button class="share-btn" onclick="retakeQuiz()">🔄 Retake Test</button>
+        </div>
+        
+        <p class="disclaimer">
+            Tag someone who's definitely a <span id="disclaimerType">TYPE</span> 👀<br>
+            Warning: May cause existential crises
+        </p>
+        
+        <div class="all-types">
+            <h2>All 16 Types of Modern Disaster</h2>
+            <div class="types-grid" id="typesGrid"></div>
+        </div>
+    </div>
+    <script>
+        // 16 Personality Types Data
+        const types = {
+            NAP: {
+                name: "NAP",
+                fullname: "Not Actually Present",
+                tag: "意识离线型",
+                quote: "I'm listening (soul has been in Iceland for 30 mins)",
+                desc: "Your body is in the meeting, but your consciousness is wandering through a field of imaginary sheep. You've mastered the art of looking engaged while being completely elsewhere.",
+                guide: "Set a 'soul recall' alarm every 2 hours. When it rings, ask yourself: 'Where am I right now?' If you don't know, drink water and touch grass.",
+                emoji: "🛌"
+            },
+            YAWN: {
+                name: "YAWN",
+                fullname: "Yearning Always, Work Never",
+                tag: "永远困倦型",
+                quote: "Coffee is my religion, but God has abandoned me",
+                desc: "You've replaced blood with caffeine, yet your eyelids still weigh 50 pounds each. Your spirit animal is a sloth on sedatives.",
+                guide: "Accept that naps are not a weakness, they are a lifestyle. Consider becoming nocturnal. Or hibernating. Or both.",
+                emoji: "☕"
+            },
+            SNOO: {
+                name: "SNOO",
+                fullname: "Sleep Now, Obligations Overdue",
+                tag: "闹钟杀手型",
+                quote: "8 alarms, 8 snoozes, 0 regrets (until I'm late)",
+                desc: "Your relationship with your alarm clock is toxic. You set 47 alarms knowing you'll dismiss them all. Time is a social construct, and you're its biggest critic.",
+                guide: "Put your phone across the room. Or in another zip code. Or launch it into space.",
+                emoji: "⏰"
+            },
+            COZY: {
+                name: "COZY",
+                fullname: "Can't Operate, Zoned Yearly",
+                tag: "舒适囚徒型",
+                quote: "The couch has grown roots into my soul",
+                desc: "You've achieved the perfect horizontal position and nothing—NOTHING—can make you move. The cushions have accepted you as one of their own.",
+                guide: "Every 3 hours, perform the 'zombie stand': rise without thinking, walk in circles, sit back down. This is your exercise now.",
+                emoji: "🛋️"
+            },
+            SCRM: {
+                name: "SCRM",
+                fullname: "Spontaneously Crying, Randomly Mad",
+                tag: "情绪过山车型",
+                quote: "I was fine 3 seconds ago, now I'm sobbing at a cat video",
+                desc: "Your emotions have no middle ground. You're either numb or experiencing all feelings simultaneously. A commercial about insurance can ruin your entire day.",
+                guide: "Create an 'emotion log' to track your crashes. Eventually, you'll see patterns like 'hungry' or 'tired' masquerading as 'existential dread'.",
+                emoji: "😭"
+            },
+            FRAZ: {
+                name: "FRAZ",
+                fullname: "Freaking Repeatedly, Almost Zero chill",
+                tag: "易燃易爆炸型",
+                quote: "Small problem? CRASH. Big problem? SYSTEM FAILURE.",
+                desc: "You react to minor inconveniences like they're apocalyptic events. The WiFi being slow for 10 seconds triggers your fight-or-flight response.",
+                guide: "Practice the '5-4-3-2-1' grounding technique: 5 things you see, 4 you can touch, 3 you hear, 2 you smell, 1 you taste. Or just scream into a pillow.",
+                emoji: "💥"
+            },
+            OVER: {
+                name: "OVER",
+                fullname: "Out of Vital Energy, Ruined",
+                tag: "电量归零型",
+                quote: "Alive, but only in the biological sense",
+                desc: "You've been running on empty for so long that 'empty' feels like your natural state. You're a human-shaped void wearing clothes.",
+                guide: "Schedule 'nothing time' like it's a meeting. Block 30 minutes daily to stare at walls. This is self-care now.",
+                emoji: "🔋"
+            },
+            MELT: {
+                name: "MELT",
+                fullname: "Mentally Exhausted, Losing Touch",
+                tag: "逐渐融化型",
+                quote: "Slowly becoming a puddle of former ambitions",
+                desc: "You're dissolving under the heat of modern life. Your edges are blurring, your motivation is evaporating, and soon you'll just be a stain on the carpet.",
+                guide: "Find a freezer. Stand in front of it. Breathe. Remember what cold feels like. This is your reset button.",
+                emoji: "🫠"
+            },
+            FINE: {
+                name: "FINE",
+                fullname: "Faking It, Not Even close",
+                tag: "我很好型",
+                quote: "FINE = F*cked up, Insecure, Neurotic, Emotional",
+                desc: "Your default answer is 'I'm fine' delivered with a dead-eyed smile. You've perfected the art of looking functional while internally screaming.",
+                guide: "Try saying 'I'm not okay' to one person this week. Watch them panic. This is how we test friendships.",
+                emoji: "🎭"
+            },
+            OKAY: {
+                name: "OKAY",
+                fullname: "Obviously Kidding, Actually Yelling inside",
+                tag: "表面淡定型",
+                quote: "Inner scream volume: 11/10. Outer appearance: chill",
+                desc: "You're a swan on a lake: graceful on the surface, legs kicking frantically underwater. Your calm demeanor is a performance art piece.",
+                guide: "Find a private place. Scream. Not a little scream. A 'I just saw a ghost' scream. Then return to society.",
+                emoji: "😇"
+            },
+            COPE: {
+                name: "COPE",
+                fullname: "Covering Our Problems Elegantly",
+                tag: "优雅硬撑型",
+                quote: "Crumbling inside, but my PowerPoint animations are PERFECT",
+                desc: "You're a master of compartmentalization. Your life may be falling apart, but your spreadsheets are color-coded and your Slack status is always green.",
+                guide: "Allow one thing to be messy today. Just one. Leave a dish unwashed. Feel the chaos. It's liberating.",
+                emoji: "📊"
+            },
+            MASK: {
+                name: "MASK",
+                fullname: "Managing Appearances, Secretly Krakatoa",
+                tag: "社交面具型",
+                quote: "Personality switching faster than WiFi networks",
+                desc: "You have a different face for every situation. Work you, friend you, family you, alone you—they're all different people, and you're not sure which is real.",
+                guide: "Spend 10 minutes being 'boring authentic you.' No jokes, no performance, just existence. It's terrifying but necessary.",
+                emoji: "🎎"
+            },
+            OOPS: {
+                name: "OOPS",
+                fullname: "Out Of Plans, Still surviving",
+                tag: "计划破产型",
+                quote: "Planned for 3 hours, executed for 3 minutes",
+                desc: "Your plans are beautiful, detailed, and completely fictional. You live in a constant state of 'I was supposed to...' while doing absolutely nothing.",
+                guide: "Set a 'minimum viable day' standard: one tiny task completed = success. Brushed teeth? You're crushing it.",
+                emoji: "📋"
+            },
+            MESS: {
+                name: "MESS",
+                fullname: "Making Everything Super Sloppy",
+                tag: "人形灾难型",
+                quote: "Room is chaos, life is chaos, but I'm vibing",
+                desc: "You're a walking disaster zone. Your space looks like a crime scene, your schedule is theoretical, and somehow you're still functioning. Mostly.",
+                guide: "Embrace the 'organized mess' system: if you can find it in under 5 minutes, it's organized. Everything else is decoration.",
+                emoji: "🌪️"
+            },
+            WHUT: {
+                name: "WHUT",
+                fullname: "What Happened? Uh... Time vanished",
+                tag: "时间黑洞型",
+                quote: "Just checking my phone—WHY IS IT DARK OUTSIDE?",
+                desc: "You have a black hole where your time management should be. You sat down to 'quickly check something' and lost 6 hours to Wikipedia rabbit holes.",
+                guide: "Set a 'reality check' timer every 30 minutes. When it rings, ask: 'Is this what I meant to be doing?' If no, panic and redirect.",
+                emoji: "📱"
+            },
+            DED: {
+                name: "DED",
+                fullname: "Doomed, Exhausted, Done",
+                tag: "彻底完蛋型",
+                quote: "Gave up struggling, now just floating downstream",
+                desc: "You've reached the final stage of burnout: acceptance. You're not fighting anymore, just observing your own life like it's a nature documentary.",
+                guide: "This is actually progress. From here, the only way is up (or sideways, which is also fine). Rest is not surrender.",
+                emoji: "⚰️"
+            }
+        };
+        // Quiz Questions
+        const questions = [
+            {
+                question: "It's Monday morning. Your alarm goes off. You:",
+                options: [
+                    { text: "Hit snooze 12 times, consider quitting via email", emoji: "😴", scores: { NAP: 2, SNOO: 2, YAWN: 1 } },
+                    { text: "Already awake since 3am overthinking 2019", emoji: "😰", scores: { SCRM: 2, FRAZ: 2, OVER: 1 } },
+                    { text: "Get up, perform being human, feel dead inside", emoji: "🎭", scores: { FINE: 2, OKAY: 2, COPE: 1 } },
+                    { text: "What alarm? I have no schedule anymore", emoji: "🌀", scores: { WHUT: 2, MESS: 2, DED: 1 } }
+                ]
+            },
+            {
+                question: "Your boss asks you to work overtime. You:",
+                options: [
+                    { text: "Suddenly remember an urgent fake appointment", emoji: "🏃", scores: { NAP: 1, OOPS: 2, COZY: 2 } },
+                    { text: "Say yes, then spend 3 hours complaining to friends", emoji: "😤", scores: { FRAZ: 2, SCRM: 1, MASK: 1 } },
+                    { text: "Agree with a smile, die a little more inside", emoji: "🙂", scores: { FINE: 2, COPE: 2, OKAY: 1 } },
+                    { text: "Stare blankly until they question their life choices", emoji: "👁️", scores: { MELT: 2, OVER: 2, DED: 2 } }
+                ]
+            },
+            {
+                question: "When someone asks 'How are you?' you:",
+                options: [
+                    { text: "Actually tell them. For 45 minutes. About dread.", emoji: "📢", scores: { SCRM: 2, FRAZ: 2, MESS: 1 } },
+                    { text: "'Living my best life!✨' (cried earlier)", emoji: "✨", scores: { FINE: 2, MASK: 2, OKAY: 1 } },
+                    { text: "Don't respond, already forgot they asked", emoji: "❓", scores: { NAP: 2, WHUT: 2, MELT: 1 } },
+                    { text: "Shrug and return to your phone void", emoji: "📱", scores: { COZY: 2, DED: 2, YAWN: 1 } }
+                ]
+            },
+            {
+                question: "At a party, you:",
+                options: [
+                    { text: "Hide in bathroom scrolling until you can leave", emoji: "🚽", scores: { NAP: 1, COZY: 2, DED: 1 } },
+                    { text: "Become DJ/bartender/drama to avoid silence", emoji: "🎉", scores: { MASK: 2, COPE: 1, FINE: 1 } },
+                    { text: "Stand in corner having imaginary arguments", emoji: "🗯️", scores: { FRAZ: 2, OVER: 1, SCRM: 1 } },
+                    { text: "Show up, immediately regret it, ghost everyone", emoji: "👻", scores: { OOPS: 2, WHUT: 2, MESS: 1 } }
+                ]
+            },
+            {
+                question: "Your room currently looks like:",
+                options: [
+                    { text: "A crime scene, but I know where everything is", emoji: "🌪️", scores: { MESS: 3, WHUT: 1, DED: 1 } },
+                    { text: "Perfectly staged for Instagram, chaos behind camera", emoji: "📸", scores: { MASK: 2, COPE: 2, FINE: 1 } },
+                    { text: "I haven't seen my floor in weeks, send help", emoji: "🆘", scores: { COZY: 2, YAWN: 1, MELT: 1 } },
+                    { text: "Minimalist because I own nothing and feel nothing", emoji: "⬜", scores: { OVER: 2, DED: 2, NAP: 1 } }
+                ]
+            },
+            {
+                question: "Your relationship with deadlines:",
+                options: [
+                    { text: "I see the deadline, I panic, I do nothing", emoji: "😱", scores: { FRAZ: 2, SCRM: 2, OOPS: 1 } },
+                    { text: "Deadline is a suggestion, time is fake anyway", emoji: "⏰", scores: { WHUT: 2, MESS: 2, SNOO: 1 } },
+                    { text: "Work perfectly until 11:59, crash at 12:00", emoji: "⚡", scores: { COPE: 2, OKAY: 2, MASK: 1 } },
+                    { text: "What deadline? I stopped checking emails", emoji: "📧", scores: { NAP: 2, COZY: 2, MELT: 1 } }
+                ]
+            },
+            {
+                question: "When you can't sleep at night, you:",
+                options: [
+                    { text: "Relive every awkward moment since 2007", emoji: "🔁", scores: { SCRM: 2, FRAZ: 2, OVER: 1 } },
+                    { text: "Doomscroll until my eyes burn", emoji: "📱", scores: { WHUT: 3, YAWN: 1, DED: 1 } },
+                    { text: "Plan my entire future, forget by morning", emoji: "🌅", scores: { OOPS: 2, MESS: 1, NAP: 1 } },
+                    { text: "Stare at ceiling, contemplate mortality", emoji: "💀", scores: { MELT: 2, DED: 2, COZY: 1 } }
+                ]
+            },
+            {
+                question: "Your current life philosophy:",
+                options: [
+                    { text: "If I ignore problems, maybe they'll ignore me", emoji: "🙈", scores: { NAP: 2, COZY: 2, WHUT: 1 } },
+                    { text: "Scream internally, perform externally", emoji: "🎭", scores: { FINE: 2, OKAY: 2, MASK: 2 } },
+                    { text: "Everything is falling apart and that's okay", emoji: "🍂", scores: { MESS: 2, MELT: 2, DED: 2 } },
+                    { text: "Must optimize every second or I've failed", emoji: "📊", scores: { COPE: 2, FRAZ: 1, OVER: 1 } }
+                ]
+            }
+        ];
+
+        let currentQuestion = 0;
+        let scores = {};
+
+        function startQuiz() {
+            document.getElementById('landing').style.display = 'none';
+            document.getElementById('quiz').style.display = 'block';
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const q = questions[currentQuestion];
+            document.getElementById('qNumber').textContent = `Question ${currentQuestion + 1}/${questions.length}`;
+            document.getElementById('question').textContent = q.question;
+            document.getElementById('progress').style.width = `${((currentQuestion + 1) / questions.length) * 100}%`;
+            
+            const optionsDiv = document.getElementById('options');
+            optionsDiv.innerHTML = '';
+            
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('div');
+                btn.className = 'option';
+                btn.innerHTML = `<span class="option-emoji">${opt.emoji}</span><span>${opt.text}</span>`;
+                btn.onclick = () => selectOption(opt.scores);
+                optionsDiv.appendChild(btn);
+            });
+        }
+
+        function selectOption(scoresToAdd) {
+            for (let [type, points] of Object.entries(scoresToAdd)) {
+                scores[type] = (scores[type] || 0) + points;
+            }
+            
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('quiz').style.display = 'none';
+            document.getElementById('result').style.display = 'block';
+            
+            // Find highest score
+            let maxScore = 0;
+            let resultType = 'NAP';
+            for (let [type, score] of Object.entries(scores)) {
+                if (score > maxScore) {
+                    maxScore = score;
+                    resultType = type;
+                }
+            }
+            
+            const typeData = types[resultType];
+            document.getElementById('resultType').textContent = typeData.name;
+            document.getElementById('resultFullname').textContent = typeData.fullname;
+            document.getElementById('resultTag').textContent = typeData.tag;
+            document.getElementById('resultQuote').textContent = `"${typeData.quote}"`;
+            document.getElementById('resultDesc').textContent = typeData.desc;
+            document.getElementById('resultGuide').textContent = typeData.guide;
+            document.getElementById('disclaimerType').textContent = typeData.name;
+            
+            // Generate all types grid
+            const grid = document.getElementById('typesGrid');
+            grid.innerHTML = '';
+            Object.values(types).forEach(t => {
+                const card = document.createElement('div');
+                card.className = 'type-card';
+                card.innerHTML = `<h3>${t.emoji} ${t.name}</h3><p>${t.fullname}</p>`;
+                card.onclick = () => showTypeDetail(t);
+                grid.appendChild(card);
+            });
+            
+            window.scrollTo(0, 0);
+        }
+
+        function showTypeDetail(typeData) {
+            document.getElementById('resultType').textContent = typeData.name;
+            document.getElementById('resultFullname').textContent = typeData.fullname;
+            document.getElementById('resultTag').textContent = typeData.tag;
+            document.getElementById('resultQuote').textContent = `"${typeData.quote}"`;
+            document.getElementById('resultDesc').textContent = typeData.desc;
+            document.getElementById('resultGuide').textContent = typeData.guide;
+            document.getElementById('disclaimerType').textContent = typeData.name;
+            window.scrollTo(0, 0);
+        }
+
+        function shareResult() {
+            const type = document.getElementById('resultType').textContent;
+            const text = `My SBTI type is ${type}. What's yours? 🎭\n\nTake the test: ${window.location.href}`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'My SBTI Result',
+                    text: text
+                });
+            } else {
+                navigator.clipboard.writeText(text);
+                alert('Result copied! Paste it anywhere to share your disaster 🎭');
+            }
+        }
+
+        function retakeQuiz() {
+            currentQuestion = 0;
+            scores = {};
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('landing').style.display = 'flex';
+            window.scrollTo(0, 0);
+        }
+    </script>
+</body>
+</html>
